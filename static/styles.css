@@ -1,0 +1,128 @@
+:root {
+  color-scheme: light;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  background-color: #f5f6fb;
+  color: #1f2937;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 48px 24px 72px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 2.4rem;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #4b5563;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.card-header h2 {
+  margin: 0 0 8px;
+  font-size: 1.4rem;
+}
+
+.card-header p {
+  margin: 0;
+  color: #6b7280;
+}
+
+.weight-form {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  align-items: end;
+}
+
+.weight-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.weight-form input {
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+}
+
+.weight-form button {
+  border: none;
+  border-radius: 12px;
+  padding: 12px 18px;
+  background: #3f6df6;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.weight-form button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 14px rgba(63, 109, 246, 0.3);
+}
+
+.chart-wrapper {
+  min-height: 280px;
+}
+
+.placeholder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.placeholder {
+  border: 1px dashed #c7d2fe;
+  border-radius: 12px;
+  padding: 18px;
+  text-align: center;
+  background: #eef2ff;
+  color: #4338ca;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 32px 16px 48px;
+  }
+
+  .weight-form {
+    grid-template-columns: 1fr;
+  }
+}
