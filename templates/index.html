@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Food Fit</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <main class="page">
+      <header>
+        <h1>Food Fit</h1>
+        <p class="subtitle">
+          Plan meals, log weight, and connect nutrition with activity data.
+        </p>
+      </header>
+
+      <section class="card">
+        <div class="card-header">
+          <h2>Daily Weight Tracker</h2>
+          <p>Log a daily weigh-in to visualize trends over time.</p>
+        </div>
+        <form class="weight-form" action="{{ url_for('add_weight') }}" method="post">
+          <label>
+            Date
+            <input type="date" name="entry_date" value="{{ today }}" required />
+          </label>
+          <label>
+            Weight (lbs)
+            <input
+              type="number"
+              name="weight"
+              step="0.1"
+              min="0"
+              placeholder="180.4"
+              required
+            />
+          </label>
+          <button type="submit">Save weight</button>
+        </form>
+        <div class="chart-wrapper">
+          <canvas id="weightChart" aria-label="Weight trend chart" role="img"></canvas>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <h2>Meal Planning (Coming Soon)</h2>
+          <p>
+            The upcoming calendar view will let you plan breakfast, lunch, and dinner
+            with calorie estimates and drill-down details.
+          </p>
+        </div>
+        <div class="placeholder-grid">
+          <div class="placeholder">Breakfast</div>
+          <div class="placeholder">Lunch</div>
+          <div class="placeholder">Dinner</div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const weightData = {{ weights | tojson }};
+      const labels = weightData.map((entry) => entry.date);
+      const values = weightData.map((entry) => entry.weight);
+
+      const ctx = document.getElementById("weightChart");
+      new Chart(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Weight (lbs)",
+              data: values,
+              borderColor: "#3f6df6",
+              backgroundColor: "rgba(63, 109, 246, 0.2)",
+              borderWidth: 2,
+              pointRadius: 4,
+              tension: 0.3,
+              fill: true,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              title: {
+                display: true,
+                text: "Weight (lbs)",
+              },
+            },
+            x: {
+              title: {
+                display: true,
+                text: "Date",
+              },
+            },
+          },
+          plugins: {
+            legend: {
+              display: false,
+            },
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
