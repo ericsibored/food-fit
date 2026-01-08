@@ -117,6 +117,170 @@ h1 {
   font-weight: 600;
 }
 
+.meal-planning-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.meal-week-label {
+  margin: 0;
+  font-weight: 600;
+}
+
+.meal-week-subtitle {
+  margin: 4px 0 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.meal-week-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.text-button {
+  text-decoration: none;
+  font-weight: 600;
+  color: #3f6df6;
+}
+
+.meal-week-grid {
+  display: grid;
+  gap: 20px;
+}
+
+.meal-day-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 16px;
+  background: #f9fafb;
+}
+
+.meal-day-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.meal-day-total {
+  margin: 6px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: #4b5563;
+  font-size: 0.85rem;
+}
+
+.meal-day-meals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.meal-slot {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 14px;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.meal-slot-header h4 {
+  margin: 0 0 4px;
+}
+
+.meal-slot-header p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.meal-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.meal-items li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  background: #f3f4f6;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.macro-row {
+  display: block;
+  margin-top: 4px;
+  color: #6b7280;
+  font-size: 0.8rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.meal-empty {
+  margin: 0;
+  color: #9ca3af;
+  font-size: 0.85rem;
+}
+
+.meal-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.meal-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: #374151;
+}
+
+.meal-form input {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 0.8rem;
+}
+
+.meal-form button {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #111827;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.inline-form {
+  margin: 0;
+}
+
+.ghost-button {
+  border: none;
+  background: transparent;
+  color: #ef4444;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 @media (max-width: 640px) {
   .page {
     padding: 32px 16px 48px;
