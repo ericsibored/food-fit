@@ -16,52 +16,371 @@
         </p>
       </header>
 
-      <section class="card">
-        <div class="card-header">
-          <h2>Daily Weight Tracker</h2>
-          <p>Log a daily weigh-in to visualize trends over time.</p>
-        </div>
-        <form class="weight-form" action="{{ url_for('add_weight') }}" method="post">
-          <label>
-            Date
-            <input type="date" name="entry_date" value="{{ today }}" required />
-          </label>
-          <label>
-            Weight (lbs)
-            <input
-              type="number"
-              name="weight"
-              step="0.1"
-              min="0"
-              placeholder="180.4"
-              required
-            />
-          </label>
-          <button type="submit">Save weight</button>
-        </form>
-        <div class="chart-wrapper">
-          <canvas id="weightChart" aria-label="Weight trend chart" role="img"></canvas>
-        </div>
-      </section>
+      <section class="dashboard">
+        <div class="main-column">
+          <section class="card calendar-card">
+            <div class="card-header calendar-header">
+              <div>
+                <h2>Monthly Nutrition Calendar</h2>
+                <p>Scroll through months to review past and upcoming days.</p>
+              </div>
+              <div class="calendar-controls">
+                <button type="button" class="ghost-button" id="prevMonth">◀</button>
+                <div class="month-label" id="monthLabel"></div>
+                <button type="button" class="ghost-button" id="nextMonth">▶</button>
+              </div>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+            <div class="calendar-legend">
+              <div class="legend-item">
+                <span class="legend-swatch past"></span> Past
+              </div>
+              <div class="legend-item">
+                <span class="legend-swatch today"></span> Today
+              </div>
+              <div class="legend-item">
+                <span class="legend-swatch future"></span> Future
+              </div>
+              <div class="legend-item">
+                <span class="legend-swatch breakfast"></span> Breakfast
+              </div>
+              <div class="legend-item">
+                <span class="legend-swatch lunch"></span> Lunch
+              </div>
+              <div class="legend-item">
+                <span class="legend-swatch dinner"></span> Dinner
+              </div>
+            </div>
+          </section>
 
-      <section class="card">
-        <div class="card-header">
-          <h2>Meal Planning (Coming Soon)</h2>
-          <p>
-            The upcoming calendar view will let you plan breakfast, lunch, and dinner
-            with calorie estimates and drill-down details.
-          </p>
+          <section class="card day-detail-card" id="dayDetailCard">
+            <div class="card-header">
+              <h2>Day Details</h2>
+              <p id="selectedDateLabel">Select a date to review your day.</p>
+            </div>
+            <div class="day-detail-grid">
+              <div class="detail-block">
+                <h3>Weight snapshot</h3>
+                <p id="selectedWeight" class="detail-highlight">No weigh-in logged.</p>
+                <p class="muted" id="targetWeightDisplay">
+                  Target weight: {{ target_weight or "Set a target" }}
+                </p>
+              </div>
+              <div class="detail-block">
+                <h3>Nutrition notes</h3>
+                <textarea
+                  id="nutritionNotes"
+                  rows="4"
+                  placeholder="Add reflections, hydration notes, or workout highlights."
+                ></textarea>
+                <button type="button" class="primary-button" id="saveNotes">
+                  Save notes
+                </button>
+              </div>
+              <div class="detail-block">
+                <h3>Meal plan & calories</h3>
+                <div class="meal-inputs">
+                  <label>
+                    Breakfast (green)
+                    <input type="number" id="breakfastCalories" min="0" placeholder="350" />
+                  </label>
+                  <label>
+                    Lunch (yellow)
+                    <input type="number" id="lunchCalories" min="0" placeholder="500" />
+                  </label>
+                  <label>
+                    Dinner (blue)
+                    <input type="number" id="dinnerCalories" min="0" placeholder="650" />
+                  </label>
+                </div>
+                <div class="calorie-summary">
+                  <div>
+                    <span class="summary-label">Daily total</span>
+                    <span class="summary-value" id="dailyTotalCalories">0</span>
+                  </div>
+                  <div>
+                    <span class="summary-label">Deficit check</span>
+                    <span class="summary-value" id="deficitStatus">Pending</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
-        <div class="placeholder-grid">
-          <div class="placeholder">Breakfast</div>
-          <div class="placeholder">Lunch</div>
-          <div class="placeholder">Dinner</div>
-        </div>
+
+        <aside class="side-column">
+          <section class="card weight-card">
+            <div class="card-header">
+              <h2>Daily Weight Tracker</h2>
+              <p>Log a daily weigh-in to visualize trends over time.</p>
+            </div>
+            <form class="weight-form" action="{{ url_for('add_weight') }}" method="post">
+              <label>
+                Date
+                <input type="date" name="entry_date" value="{{ today }}" required />
+              </label>
+              <label>
+                Weight (lbs)
+                <input
+                  type="number"
+                  name="weight"
+                  step="0.1"
+                  min="0"
+                  placeholder="180.4"
+                  required
+                />
+              </label>
+              <button type="submit">Save weight</button>
+            </form>
+            <form class="target-form" action="{{ url_for('set_target_weight') }}" method="post">
+              <label>
+                Target weight (lbs)
+                <input
+                  type="number"
+                  name="target_weight"
+                  step="0.1"
+                  min="0"
+                  placeholder="165"
+                  value="{{ target_weight or '' }}"
+                />
+              </label>
+              <button type="submit">Save target</button>
+            </form>
+            <div class="chart-wrapper">
+              <canvas id="weightChart" aria-label="Weight trend chart" role="img"></canvas>
+            </div>
+          </section>
+        </aside>
       </section>
     </main>
 
     <script>
       const weightData = {{ weights | tojson }};
+      const weightsByDate = Object.fromEntries(
+        weightData.map((entry) => [entry.date, entry.weight])
+      );
+      const today = "{{ today }}";
+      const calorieTarget = 1800;
+
+      const calendarGrid = document.getElementById("calendarGrid");
+      const monthLabel = document.getElementById("monthLabel");
+      const selectedDateLabel = document.getElementById("selectedDateLabel");
+      const selectedWeight = document.getElementById("selectedWeight");
+      const nutritionNotes = document.getElementById("nutritionNotes");
+      const saveNotes = document.getElementById("saveNotes");
+      const breakfastCalories = document.getElementById("breakfastCalories");
+      const lunchCalories = document.getElementById("lunchCalories");
+      const dinnerCalories = document.getElementById("dinnerCalories");
+      const dailyTotalCalories = document.getElementById("dailyTotalCalories");
+      const deficitStatus = document.getElementById("deficitStatus");
+
+      const storageKey = "foodFitDailyData";
+      const storedData = JSON.parse(localStorage.getItem(storageKey) || "{}");
+
+      const state = {
+        currentMonth: new Date(today),
+        selectedDate: today,
+      };
+
+      const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+      function formatDate(date) {
+        return date.toISOString().split("T")[0];
+      }
+
+      function getDayData(dateStr) {
+        return (
+          storedData[dateStr] || {
+            notes: "",
+            meals: {
+              breakfast: "",
+              lunch: "",
+              dinner: "",
+            },
+            calories: {
+              breakfast: 0,
+              lunch: 0,
+              dinner: 0,
+            },
+          }
+        );
+      }
+
+      function saveDayData(dateStr, data) {
+        storedData[dateStr] = data;
+        localStorage.setItem(storageKey, JSON.stringify(storedData));
+      }
+
+      function renderCalendar() {
+        calendarGrid.innerHTML = "";
+        const firstDay = new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth(), 1);
+        const startDay = firstDay.getDay();
+        const daysInMonth = new Date(
+          state.currentMonth.getFullYear(),
+          state.currentMonth.getMonth() + 1,
+          0
+        ).getDate();
+
+        monthLabel.textContent = state.currentMonth.toLocaleDateString("en-US", {
+          month: "long",
+          year: "numeric",
+        });
+
+        dayNames.forEach((day) => {
+          const header = document.createElement("div");
+          header.className = "calendar-day-header";
+          header.textContent = day;
+          calendarGrid.appendChild(header);
+        });
+
+        for (let i = 0; i < startDay; i += 1) {
+          const emptyCell = document.createElement("div");
+          emptyCell.className = "calendar-cell empty";
+          calendarGrid.appendChild(emptyCell);
+        }
+
+        for (let day = 1; day <= daysInMonth; day += 1) {
+          const cellDate = new Date(
+            state.currentMonth.getFullYear(),
+            state.currentMonth.getMonth(),
+            day
+          );
+          const dateStr = formatDate(cellDate);
+          const cell = document.createElement("button");
+          cell.type = "button";
+          cell.className = "calendar-cell";
+          cell.dataset.date = dateStr;
+
+          if (dateStr === today) {
+            cell.classList.add("today");
+          } else if (dateStr < today) {
+            cell.classList.add("past");
+          } else {
+            cell.classList.add("future");
+          }
+
+          if (dateStr === state.selectedDate) {
+            cell.classList.add("selected");
+          }
+
+          const dayNumber = document.createElement("span");
+          dayNumber.className = "calendar-date";
+          dayNumber.textContent = day;
+
+          const mealBars = document.createElement("div");
+          mealBars.className = "meal-bars";
+          ["breakfast", "lunch", "dinner"].forEach((meal) => {
+            const bar = document.createElement("span");
+            bar.className = `meal-bar ${meal}`;
+            mealBars.appendChild(bar);
+          });
+
+          const status = document.createElement("span");
+          status.className = "calorie-status";
+          status.textContent = getCalorieStatus(dateStr);
+
+          cell.append(dayNumber, mealBars, status);
+          cell.addEventListener("click", () => {
+            state.selectedDate = dateStr;
+            updateDayDetail();
+            renderCalendar();
+          });
+
+          calendarGrid.appendChild(cell);
+        }
+      }
+
+      function getCalorieStatus(dateStr) {
+        const dayData = getDayData(dateStr);
+        const total =
+          Number(dayData.calories.breakfast || 0) +
+          Number(dayData.calories.lunch || 0) +
+          Number(dayData.calories.dinner || 0);
+
+        if (total === 0) {
+          return dateStr > today ? "Planned" : "No log";
+        }
+        return total <= calorieTarget ? "On track" : "Above target";
+      }
+
+      function updateDayDetail() {
+        const dateStr = state.selectedDate;
+        const dayData = getDayData(dateStr);
+        selectedDateLabel.textContent = new Date(dateStr).toLocaleDateString("en-US", {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        });
+
+        const weight = weightsByDate[dateStr];
+        selectedWeight.textContent = weight ? `${weight} lbs logged` : "No weigh-in logged.";
+
+        nutritionNotes.value = dayData.notes || "";
+        breakfastCalories.value = dayData.calories.breakfast || "";
+        lunchCalories.value = dayData.calories.lunch || "";
+        dinnerCalories.value = dayData.calories.dinner || "";
+
+        updateCalorieSummary();
+      }
+
+      function updateCalorieSummary() {
+        const total =
+          Number(breakfastCalories.value || 0) +
+          Number(lunchCalories.value || 0) +
+          Number(dinnerCalories.value || 0);
+
+        dailyTotalCalories.textContent = total.toString();
+        if (total === 0) {
+          deficitStatus.textContent = "Pending";
+        } else {
+          deficitStatus.textContent = total <= calorieTarget ? "Below target" : "Above target";
+        }
+
+        const dayData = getDayData(state.selectedDate);
+        dayData.calories = {
+          breakfast: Number(breakfastCalories.value || 0),
+          lunch: Number(lunchCalories.value || 0),
+          dinner: Number(dinnerCalories.value || 0),
+        };
+        saveDayData(state.selectedDate, dayData);
+      }
+
+      saveNotes.addEventListener("click", () => {
+        const dayData = getDayData(state.selectedDate);
+        dayData.notes = nutritionNotes.value.trim();
+        saveDayData(state.selectedDate, dayData);
+        renderCalendar();
+      });
+
+      [breakfastCalories, lunchCalories, dinnerCalories].forEach((input) => {
+        input.addEventListener("input", () => {
+          updateCalorieSummary();
+          renderCalendar();
+        });
+      });
+
+      document.getElementById("prevMonth").addEventListener("click", () => {
+        state.currentMonth = new Date(
+          state.currentMonth.getFullYear(),
+          state.currentMonth.getMonth() - 1,
+          1
+        );
+        renderCalendar();
+      });
+
+      document.getElementById("nextMonth").addEventListener("click", () => {
+        state.currentMonth = new Date(
+          state.currentMonth.getFullYear(),
+          state.currentMonth.getMonth() + 1,
+          1
+        );
+        renderCalendar();
+      });
+
+      renderCalendar();
+      updateDayDetail();
+
       const labels = weightData.map((entry) => entry.date);
       const values = weightData.map((entry) => entry.weight);
 
