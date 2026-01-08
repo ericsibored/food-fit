@@ -46,16 +46,117 @@
 
       <section class="card">
         <div class="card-header">
-          <h2>Meal Planning (Coming Soon)</h2>
+          <h2>Meal Planning</h2>
           <p>
-            The upcoming calendar view will let you plan breakfast, lunch, and dinner
-            with calorie estimates and drill-down details.
+            Plan breakfast, lunch, and dinner for each day of the week. Add foods with
+            optional calories and macro nutrients.
           </p>
         </div>
-        <div class="placeholder-grid">
-          <div class="placeholder">Breakfast</div>
-          <div class="placeholder">Lunch</div>
-          <div class="placeholder">Dinner</div>
+        <div class="meal-planning-header">
+          <div>
+            <p class="meal-week-label">Week of {{ week_start }}</p>
+            <p class="meal-week-subtitle">Tap into a day to add or adjust meals.</p>
+          </div>
+          <div class="meal-week-actions">
+            <a class="text-button" href="{{ url_for('index', week_start=prev_week) }}"
+              >Previous week</a
+            >
+            <a class="text-button" href="{{ url_for('index', week_start=next_week) }}"
+              >Next week</a
+            >
+          </div>
+        </div>
+        <div class="meal-week-grid">
+          {% for day in week_days %}
+          <article class="meal-day-card">
+            <header class="meal-day-header">
+              <h3>{{ day.label }}</h3>
+              <p class="meal-day-total">
+                Daily totals:
+                <span>Calories {{ day.daily_totals.calories or "—" }}</span>
+                <span>Protein {{ day.daily_totals.protein or "—" }}</span>
+                <span>Fat {{ day.daily_totals.fat or "—" }}</span>
+                <span>Sugars {{ day.daily_totals.sugars or "—" }}</span>
+                <span>Carbs {{ day.daily_totals.carbs or "—" }}</span>
+              </p>
+            </header>
+            <div class="meal-day-meals">
+              {% for meal in day.meals %}
+              <section class="meal-slot">
+                <div class="meal-slot-header">
+                  <h4>{{ meal.label }}</h4>
+                  <p>
+                    Totals:
+                    <span>Cal {{ meal.totals.calories or "—" }}</span>
+                    <span>P {{ meal.totals.protein or "—" }}</span>
+                    <span>F {{ meal.totals.fat or "—" }}</span>
+                    <span>Sug {{ meal.totals.sugars or "—" }}</span>
+                    <span>C {{ meal.totals.carbs or "—" }}</span>
+                  </p>
+                </div>
+                {% if meal.items %}
+                <ul class="meal-items">
+                  {% for item in meal.items %}
+                  <li>
+                    <div>
+                      <strong>{{ item.food_name }}</strong>
+                      <span class="macro-row">
+                        {% if item.calories is not none %}Cal {{ item.calories }}{% endif %}
+                        {% if item.protein is not none %}P {{ item.protein }}{% endif %}
+                        {% if item.fat is not none %}F {{ item.fat }}{% endif %}
+                        {% if item.sugars is not none %}Sug {{ item.sugars }}{% endif %}
+                        {% if item.carbs is not none %}C {{ item.carbs }}{% endif %}
+                      </span>
+                    </div>
+                    <form
+                      class="inline-form"
+                      action="{{ url_for('delete_meal_item', item_id=item.id) }}"
+                      method="post"
+                    >
+                      <input type="hidden" name="week_start" value="{{ week_start }}" />
+                      <button type="submit" class="ghost-button">Remove</button>
+                    </form>
+                  </li>
+                  {% endfor %}
+                </ul>
+                {% else %}
+                <p class="meal-empty">No foods added yet.</p>
+                {% endif %}
+                <form class="meal-form" action="{{ url_for('add_meal_item') }}" method="post">
+                  <input type="hidden" name="entry_date" value="{{ day.date }}" />
+                  <input type="hidden" name="meal_type" value="{{ meal.key }}" />
+                  <input type="hidden" name="week_start" value="{{ week_start }}" />
+                  <label>
+                    Food
+                    <input name="food_name" type="text" placeholder="Greek yogurt" required />
+                  </label>
+                  <label>
+                    Calories
+                    <input name="calories" type="number" min="0" step="0.1" placeholder="150" />
+                  </label>
+                  <label>
+                    Protein
+                    <input name="protein" type="number" min="0" step="0.1" placeholder="12" />
+                  </label>
+                  <label>
+                    Fat
+                    <input name="fat" type="number" min="0" step="0.1" placeholder="4" />
+                  </label>
+                  <label>
+                    Sugars
+                    <input name="sugars" type="number" min="0" step="0.1" placeholder="8" />
+                  </label>
+                  <label>
+                    Carbs
+                    <input name="carbs" type="number" min="0" step="0.1" placeholder="20" />
+                  </label>
+                  <button type="submit">Add food</button>
+                </form>
+              </section>
+              {% endfor %}
+            </div>
+          </article>
+          {% endfor %}
         </div>
       </section>
     </main>
